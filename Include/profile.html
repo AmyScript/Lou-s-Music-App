@@ -1,0 +1,398 @@
+<?php
+// start session
+session_start();
+// get session id
+$sessionvalue = session_id();
+include("dbfile.php");
+
+// call session_verify_logged_in .. remember num_rows
+verify_logged_in($sessionvalue);
+// load profile information
+$errors2;
+$provincesRows;
+province_load();
+
+	//get custID from session_verify_logged_in procedure
+	function verify_logged_in($sessionval){
+		global $connection, $customerid, $create_profile, $errors2;
+		$sql= "call session_verify_logged_in('$sessionval')";
+		$connection->next_result();
+
+			if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result-> fetch_row();
+					$customerid = $row[0];
+					load_customer($customerid);
+					load_addresses($customerid);
+					load_phone($customerid);
+					$errors2 = "Successfully retreived customer ID";
+				}
+				else
+				{
+					$errors2 = "Could not retreive customer ID";
+				}
+			}
+
+	}
+
+	function load_customer($custID)
+	{
+		global $connection,$firstname,$lastname,$email,$password,$confirm, $errors2;
+		$sql = "call customer_load_by_ID($custID)";
+		$connection->next_result();
+		if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result -> fetch_row();
+					$firstname = $row[0];
+					$lastname = $row[1];
+					$email = $row[2];
+					$password = $row[3];
+					$confirm = $row[3];
+					$errors2 = "Successfully retreived customer info";
+				}
+				else
+				{
+
+					$errors2 = "Could not retreive customer info";
+				}
+			}
+
+	}
+
+	function load_addresses($custID)
+	{
+		global $connection,$street,	$suite,	$city,$province,$postal,$country,$errors2;
+		$sql = "call addresses_load_by_ID($custID)";
+		$connection->next_result();
+		if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result -> fetch_row();
+					$street = $row[0];
+					$suite = $row[1];
+					$city = $row[2];
+					$province = $row[3];
+					$postal = $row[4];
+					$country = $row[5];
+
+					$errors2 = "Successfully retreived address info";
+				}
+				else
+				{
+					$errors2 = "Could not retreive address info";
+				}
+			}
+
+	}
+
+	function load_phone($custID)
+	{
+		global $connection,$homephone,$workphone,$extension,$cellphone, $errors2;
+		$sql = "call phone_load_by_ID_and_type($custID, 'H')";
+		$connection->next_result();
+		if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result -> fetch_row();
+					$homephone = $row[0];
+
+					$errors2 = "Successfully retreived homephone";
+				}
+				else
+				{
+					$errors2 = "Could not retreive homephone";
+				}
+			}
+		$sql = "call phone_load_by_ID_and_type($custID, 'W')";
+		$connection->next_result();
+		if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result -> fetch_row();
+					$workphone = $row[0];
+					$extension = $row[1];
+
+					$errors2 = "Successfully retreived workphone";
+				}
+				else
+				{
+					$errors2 = "Could not retreive workphone";
+				}
+			}
+		$sql = "call phone_load_by_ID_and_type($custID, 'C')";
+		$connection->next_result();
+		if($result = $connection->query($sql))
+			{
+				if($result->num_rows>0)
+				{
+					$row = $result -> fetch_row();
+					$cellphone = $row[0];
+
+					$errors2 = "Successfully retreived cellphone";
+				}
+				else
+				{
+					$errors2 = "Could not retreive cellphone";
+				}
+			}
+	}
+	function province_load()
+	{
+		global $connection, $provincesRows, $errors2;
+		$sql = "call provinces_load()";
+		$connection->next_result();
+		try
+		{
+			 $result = $connection->query($sql);
+			 if($result->num_rows > 0)
+			 {
+				$provincesRows = $result->fetch_all(MYSQLI_ASSOC);
+				//print_r($provincesRows);
+			 }
+			 else
+			 {
+			 $errors2 = "Could Not Load Provinces Err 8547";
+			 }
+		}
+		catch(Exception $ex)
+		{
+		$errors2 = "Could not load Provinces Err 5497";
+		}
+
+	}
+
+
+	if(isset($_POST['save']))
+	{
+		global $customerid;
+		//will save the changes
+		$firstname= $_POST['firstname'];
+		$lastname=$_POST['lastname'];
+		$email=$_POST['email'];
+		$password = $_POST['pswd'];
+		$confirm=$_POST['confirm'];
+		$street=$_POST['street'];
+		$suite=$_POST['suite'];
+		$city=$_POST['city'];
+		$province=$_POST['province'];
+		$postal = $_POST['postalcode'];
+		$country = $_POST['country'];
+		$homephone = $_POST['homephone'];
+		$workphone = $_POST['worknumber'];
+		$cellphone = $_POST['cellphone'];
+		$extension=$_POST['extension'];
+
+		//validate input was entered
+		validateInput($firstname, 'firstname');
+		validateInput($lastname, 'lastname');
+		validateInput($email,'email');
+		validateInput($password,'password');
+		validateInput($street,'street');
+		validateInput($city,'city');
+		validateInput($province,'province');
+		validateInput($postal,'postal');
+		validateInput($country,'country');
+		ValidatePassword($password,$confirm,'confirm');
+		ValidatePhone($homephone,$workphone,$cellphone,'phone');
+		if(count($errors)==0)
+		{
+					update_profile($customerid);
+					//header('Location: ./landingpage.php');
+		}
+
+	}
+	else if (isset($_POST['cancel']))
+	{
+		header('Location: ./landingpage.php');
+	}
+	else
+	{
+	}
+
+	function validateInput($input, $theerror)
+		{
+			global $errors,$message;
+			$input=trim($input);
+			if(empty($input)){
+				$errors[$theerror]="*";
+				$message="Please fill in all the required fields";
+			}
+		}
+	function ValidatePassword($password,$confirm,$theerror)
+		{
+			global $errors;
+			if($password != $confirm)
+			{
+				$errors[$theerror]="*";
+				$message ="Passwords do not match";
+			}
+		}
+	function ValidatePhone($home,$work,$cell,$theerror)
+			{
+				global $message,$errors;
+				if(empty($home) && empty($work) && empty($cell))
+				{
+					//$errors[$theerror];
+					$message="At least one phone number must be entered";
+				}
+			}
+
+		function update_profile($custID)
+		{
+			global $connection, $firstname,$lastname,$email,$password,$confirm,$street,$suite,$city,$province,$postal,$country,$homephone,$workphone,$extension,$cellphone,$errors;
+			$password=md5($password);
+			//update customer info
+			$sql="call customer_update_by_ID('$custID','$firstname','$lastname','$email','$password')";
+			$connection->next_result();
+			$connection->query($sql);
+
+			//update address
+			$sql="call addresses_update_by_ID('$street','$suite','$city','$province','$postal','$country', '$custID')";
+			$connection->next_result();
+			$connection->query($sql);
+
+			//update home phone
+			$sql="call phone_update_by_ID_and_type('$custID', 'H', '$homephone', ' ')";
+			$connection->next_result();
+			$connection->query($sql);
+
+			//update cell phone
+			$sql="call phone_update_by_ID_and_type('$custID', 'C', '$cellphone', ' ')";
+			$connection->next_result();
+			$connection->query($sql);
+
+			//update work phone
+			$sql="call phone_update_by_ID_and_type('$custID', 'W', '$workphone', '$extension')";
+			$connection->next_result();
+			$connection->query($sql);
+		}
+?>
+<form method="POST" action="" autocomplete="off">
+<div class="divPage">
+	<div class="bodyContent">
+		<h2>Change Profile</h2>
+		<h3>Personal</h3>
+		<div class="row">
+			<label class="rowtextlabel">First Name</label>
+			<input class="rowinput" type="text" name="firstname" id="fname" maxlength="40" value="<?php echo $firstname; ?>" />
+			<div class="errorStar">
+				<?php if(isset($errors['firstname'])) echo $errors['firstname'];?>
+			</div>
+			<label class="rowtextlabelright">Last Name</label>
+			<input class="rowinput" type="text" name="lastname" id="lname" maxlength="40" value="<?php echo $lastname; ?>"/>
+			<div class="errorStar">
+				<?php if(isset($errors['lastname'])) echo $errors['lastname'];?>
+			</div>
+		</div>
+		<br />
+		<div class="row">
+			<label class="rowtextlabel">Email</label>
+			<input class="rowinput" type="text" name="email" id="email" maxlength="255" value="<?php echo $email; ?>" />
+			<div class="errorStar">
+				<?php if(isset($errors['email'])) echo $errors['email'];?>
+
+			</div>
+		</div>
+		<br />
+		<div class="row">
+			<label class="rowtextlabel">Password</label>
+			<input class="rowinput" type="password" name="pswd" id="pswd" maxlength="15" />
+			<div class="errorStar">
+				<?php if(isset($errors['password'])) echo $errors['password'];?>
+			</div>
+			<label class="rowtextlabelright">confirm</label>
+			<input class="rowinput" type="password" name="confirm" id="confirm"  />
+			<div class="errorStar">
+				<?php if(isset($errors['confirm'])) echo $errors['confirm'];?>
+			</div>
+		</div>
+		<br />
+		<h3>Address</h3>
+		<div class="row">
+			<label class="rowtextlabel">Street</label>
+			<input class="rowinput" type="text" name="street" id="street" maxlength="125" value="<?php echo $street; ?>"/>
+			<div class="errorStar">
+				<?php if(isset($errors['street'])) echo $errors['street'];?>
+			</div>
+			<label class="rowtextlabelright">suite</label>
+			<input class="rowinput" type="text" name="suite" id="suite" maxlength="8" value="<?php echo $suite; ?>" />
+		</div>
+		<br />
+		<div class="row">
+			<label class="rowtextlabel">City</label>
+			<input class="rowinput" type="text" name="city" id="city"  maxlength="35" value="<?php echo $city; ?>"/>
+			<div class="errorStar">
+				<?php if(isset($errors['city'])) echo $errors['city'];?>
+			</div>
+			<label class="rowtextlabelright">province</label>
+			&nbsp;
+			<select  name="province">
+					<option value="">Select Province</option>
+					<?php foreach($provincesRows as $prov):?>
+							<option value="<?php echo $prov['shortvalue'];?>"<?php if($province == $prov['shortvalue']) echo 'selected="selected"'?>><?php echo $prov['display'];?></option>
+					<?php endforeach?>
+			</select>
+
+			<div class="errorStar">
+				<?php if(isset($errors['province'])) echo $errors['province'];?>
+			</div>
+		</div>
+		<div class="row">
+			<label class="rowtextlabel">Postal</label>
+			<input class="rowinput" type="text" name="postalcode" id="postalcode" maxlength="7" value="<?php echo $postal; ?>"/>
+				<div class="errorStar">
+				<?php if(isset($errors['postalcode'])) echo $errors['postalcode'];?>
+			</div>
+
+			<label class="rowtextlabel">Country</label>
+			&nbsp;
+			<select name= "country">
+				<option value="">Select Country</option>
+					<option <?php if($country == 'CA'){echo("selected");}?>>Canada</option>
+					<option <?php if($country == 'US'){echo("selected");}?>>United States</option>
+			</select>
+			<div class="errorStar">
+				<?php if(isset($errors['country'])) echo $errors['country'];?>
+			</div>
+		</div>
+		<br />
+		<h3>Contact Numbers</h3>
+		<div class="row">
+			<label class="rowtextlabel">Home</label>
+			<input class="rowinput" type="text" name="homephone" id="homephone" maxlength="14" value="<?php echo $homephone; ?>" />
+			<label class="rowtextlabelright">Cell</label>
+			<input class="rowinput" type="text" name="cellphone" id="cellphone" maxlength="14" value="<?php echo $cellphone; ?>"/>
+		</div>
+		<br />
+		<div class="row">
+			<label class="rowtextlabel">Work</label>
+			<input class="rowinput" type="text" name="worknumber" id="worknumber" maxlength="14" value="<?php echo $workphone; ?>"/>
+			<label class="rowtextlabel">Extension</label>
+			<input class="rowinput" type="text" name="extension" id="ext" maxlength="14" value="<?php echo $extension; ?>"/>
+		</div>
+		<br />
+		<div class="divCenter" >
+		<br />
+			<div class="errorStar">
+					<?php if(!empty($message)) echo $message;?>
+			</div>
+		<br />
+			<div class="errorStar">
+					<?php echo $errors2;?>
+			</div>
+		<br />
+		<input class="button" type="submit" name="save" id="savebutton" value="Save Changes" />
+		<input class="button" type="submit" name="cancel" id="cancelbutton" value="Cancel" />
+
+
+		</div>
+		</div>
+</div>
+</form>

@@ -1,0 +1,395 @@
+<?php
+    session_start();
+	$sessionvalue = session_id();
+	include("dbfile.php");
+
+	$albumid="";
+	$category="";
+
+	$price = "";
+	$total ="0.00";
+	$subtotal ="0.00";
+	$taxes ="0.00";
+	$message ="";
+	$categoryrows;
+	$albumrows = "";
+	$orderid  = "";
+	$quantity = "";
+	$custid = "";
+	$orderdetailsID = "";
+	$orderrows = "";
+	$itemsrow = "";
+	$items = array();
+	if(Determine_User($sessionvalue))
+	{
+		get_user_info($custid);
+		// setup routine
+		Categories_load_all();
+		//if(!empty($_POST['order'])
+		//{
+
+		//}
+
+    if(isset($_POST['category']))
+		{
+      //echo $_POST['category'];
+			if($category != 5)
+			{
+				$category = $_POST['category'];
+				Albums_by_Category_Load($category);
+				if(isset($_POST['album']))
+				{
+					$albumid = $_POST['album'];
+					if(!empty($albumid))
+					{
+						Album_Price_Load($albumid);
+					}
+					else
+					{
+					$price = "";
+					}
+				}
+
+			}
+			else
+			{
+				$price = "";
+			}
+		}
+		if(isset($_POST['save']))
+		{
+			// will save the order
+			// create order record
+			if(empty($_POST['order']))
+			{
+				$albumid = $_POST['album'];
+				$price = $_POST['price'];
+				if(create_new_order($custid))
+				{
+          //echo "hello";
+					if(calculate_running_total($orderid))
+					{
+						load_albums_on_order($orderid);
+					}
+				}
+				else
+				{
+          //echo "failed";
+				}
+			}
+			else
+			{
+
+			}
+		}
+
+		else if(isset($_POST['clear']))
+		{
+				// delete all order detail records based on the orderid
+				// delete the order record based on the orderid
+				//clear the screen
+		}
+		else if(isset($_POST['checkout']))
+		{
+			header('Location: ./paymentprocessing.php');
+		}
+		else
+		{
+		}
+	}
+	else
+	{
+		// redirect the user back to login
+	}
+	function load_albums_on_order($orderid)
+	{
+    //echo "hello";
+		global $connection, $itemsrow;
+		$sql = "call orderdetails_load_by_orderid($orderid)";
+    //echo $sql;
+		$connection->next_result();
+		$retrieved = $connection->query($sql);
+		if($retrieved->num_rows > 0)
+		{
+			$itemsrow = $retrieved->fetch_all(MYSQLI_ASSOC);
+			//print_r($itemsrow);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+
+	}
+	function calculate_running_total($orderid)
+	{
+		global $connection, $subtotal,$taxes,$total;
+		$sql = "call orderdetails_sum_order($orderid)";
+		$sqltaxrate = "call taxrate_load_active()";
+		$connection->next_result();
+		$retrieved = $connection->query($sql);
+		if($retrieved->num_rows > 0)
+		{
+			$rowsubtotal = $retrieved->fetch_row();
+			$subtotal = $rowsubtotal[0];
+			$connection->next_result();
+			$retrieved = $connection->query($sqltaxrate);
+			if($retrieved->num_rows > 0)
+			{
+				$rowtaxes = $retrieved->fetch_row();
+				$taxrate = $rowtaxes[1];
+				$taxes = $taxrate * $subtotal;
+				$taxes = number_format($taxes,2);
+				$total = $subtotal + $taxes;
+				return 1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+
+	}
+	function create_new_order($custid)
+	{
+		global $connection,$orderid, $albumid,$price;
+		$sql = "call order_insert($custid)";
+    //echo $sql;
+		$sqlorder = "call order_get_last_inserted($custid)";
+    //echo $sqlorder;
+		$connection->next_result();
+		$connection->query($sql);
+		if(mysqli_affected_rows($connection) == 1)
+		{
+			$connection->next_result();
+			$retrieved = $connection->query($sqlorder);
+			if($retrieved->num_rows > 0)
+			{
+				$row = $retrieved->fetch_row();
+        //print_r($row);
+				$orderid = $row[0];
+				$sqlorderdetail = "call orderdetails_insert($orderid,$albumid,$price)";
+        //echo $sqlorderdetail;
+        $connection->next_result();
+				$connection->query($sqlorderdetail);
+				if(mysqli_affected_rows($connection) == 1)
+				{
+
+          return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+			else
+			{
+					return 0;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+function get_user_info($custid)
+{
+	global $connection;
+	$firstname = "";
+	$lastname = "";
+	$sql = "call customer_load_by_ID($custid)";
+	$connection->next_result();
+	$retrieved = $connection->query($sql);
+	if($retrieved->num_rows > 0)
+	{
+		$row = $retrieved->fetch_row();
+		$firstname = $row[0];
+		$lastname = $row[1];
+		echo $firstname." ".$lastname;
+	}
+	else
+	{
+		header('Location: ./index.php');
+	}
+
+
+}
+function Determine_User($thesession)
+{
+	global $connection, $custid;
+	$sql = "call session_verify_logged_in('$thesession')";
+	$connection->next_result();
+	$retrieved = $connection->query($sql);
+	try
+	{
+		if($retrieved->num_rows > 0)
+		{
+			$row = $retrieved->fetch_row();
+			$custid = $row[0];
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+
+	}
+	catch(Exception $ex)
+	{
+		return 0;
+	}
+}
+	function Categories_load_all()
+	{
+		global $connection,$categoryrows;
+		$sql = "call categories_Load()";
+		$connection->next_result();
+		$retrieved = $connection->query($sql);
+		if($retrieved->num_rows > 0)
+		{
+			$categoryrows = $retrieved->fetch_all(MYSQLI_ASSOC);
+			//print_r($categoryrows);
+		}
+		else
+		{
+
+		}
+	}
+	function Albums_by_Category_Load($cat)
+	{
+		global $connection,$albumrows;
+		$sql = "call albums_by_category('$cat')";
+		$connection->next_result();
+		$retrieved = $connection->query($sql);
+		if($retrieved->num_rows > 0)
+		{
+			$albumrows= $retrieved->fetch_all(MYSQLI_ASSOC);
+			//print_r($albumrows);
+		}
+	}
+	function Album_Price_Load($album)
+	{
+		global $connection, $price;
+		$sql = "call album_load_by_id($album)";
+		$connection->next_result();
+	   //echo $sql;
+		$retrieved = $connection->query($sql);
+    //print_r($retrieved);
+		if($retrieved->num_rows > 0)
+		{
+			$row = $retrieved->fetch_ASSOC();
+			$price = $row['price'];
+
+		}
+		else
+		{
+		}
+
+	}
+?>
+<form method="POST" action="">
+<div class="divPage">
+	<div class="bodyContent">
+		<h2>Order Page</h2>
+		  <div class="divCenter">
+				<input class="button" type="submit" name="checkout" id="checkout" value="Check Out" />
+			</div>
+			<div class="divbox">
+				<h3>Order Album</h3>
+				<div class="row">
+					<div class="orderdropdown">
+						<label class="rowtextlabel">Category</label>
+						&nbsp;
+						<select  name="category" onchange="this.form.submit();">
+						<?php foreach($categoryrows as $cat):?>
+							<option value="<?php echo $cat['categoryid'];?>"<?php if($category == $cat['categoryid']) echo 'selected="selected"'?>><?php echo $cat['displayvalue'];?></option>
+					<?php endforeach?>
+
+                        </select>
+					</div>
+					&nbsp;&nbsp;
+					<input type="submit" name="categorysload" id="categorysload" value="Load"/>
+				</div>
+
+				<div class="row">
+					<div class="orderdropdown">
+						<label class="rowtextlabel">Select Album</label>
+						&nbsp;
+						<select  name="album" onchange="this.form.submit();" >
+							<option value="0">Select</option>
+								<?php foreach($albumrows as $album):?>
+									<option value="<?php echo $album['albumid'];?>"<?php if($albumid == $album['albumid']) echo 'selected="selected"'?>><?php echo $album['name'];?></option>
+								<?php endforeach?>
+						</select>
+
+					</div>
+					<input type="submit" name="details" id="details" value="View Songs"/>
+
+
+
+				</div>
+				<div>
+					<label class="rowtextlabel">Price</label>	&nbsp;&nbsp;
+					<input class="rowinputsmall" type="text"  name="price" id= "price" readonly value="<?php echo $price;?>" />
+				</div>
+
+
+
+
+			<h3>Albums On Order</h3>
+			<table>
+				<thead>
+					<tr>
+						<th class="tablecolumnlarge">Album</th>
+						<th class="tablecolumn">Price</th>
+					</tr>
+					<tbody>
+              <?php if(!empty($orderid)){
+							 foreach($itemsrow as $albums): ?>
+								<tr>
+									<td class="tablecolumnlarge"><?php echo $albums['name'];?></td>
+									<td class="tablecolumn"><?php echo $albums['unitprice'];?></td>
+								</tr>
+							<?php endforeach?>
+							<?php
+							}
+							?>
+
+					</tbody>
+
+				</thead>
+			</table>
+
+				<div class="row">
+					<div class="divCenter" >
+						<input class="button" type="submit" name="save" id="savebutton" value="Add to Order" />
+						<input class="button" type="submit" name="clear" id="clearbutton" value="Cancel" />
+
+					</div>
+				</div>
+
+			</div>
+
+			<div class= "taxesdisplay" >
+			     Order ID :
+				<input type="text" readonly name="order" id="order" value="<?php echo $orderid; ?>" width="24px" />
+			</div>
+			<div class= "taxesdisplay" >
+			     Sub Total :
+				<input type="text" readonly name="subtotal" id="subtotal" value="<?php echo $subtotal; ?>" width="24px" />
+			</div>
+			<div class= "taxesdisplay" >
+				Taxes :
+				<input type="text" readonly name="taxes" id="taxes" value="<?php echo $taxes; ?>" width="24px" />
+			</div>
+			<div class= "taxesdisplay" >
+				Total :
+				<input type="text" readonly name="total" id="total" value="<?php echo $total; ?>" width="24px" />
+
+			</div>
+		  	<br />
+			<br />
+
+	</div>
+</div>
+</form>

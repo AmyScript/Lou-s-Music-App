@@ -1,0 +1,129 @@
+<?php
+
+include("./dbfile.php");
+session_start();
+$sessionvalue = session_id();
+//echo $sessionvalue;
+$custid="";
+$datesrow;
+$previous;
+if(Determine_User($sessionvalue))
+{
+	get_user_info($custid);
+	get_order_dates($custid);
+
+}
+else
+{
+	header('Location: ./index.php'); //redirect user to log in if something goes wrong
+}
+
+if(isset($_POST['view']))
+{
+global $date, $custid;
+//echo "hello";
+$date=$_POST['orderdate'];
+get_order_details($date, $custid);
+
+
+}
+else {
+
+}
+
+function get_order_details($date, $custid)
+{
+	//echo $date;
+	//echo $custid;
+}
+function get_order_dates($custid)
+{
+	global $connection, $datesrow;
+	$sql = "call order_load_by_custID($custid)";
+	$connection->next_result();
+	$retreived = $connection->query($sql);
+	$datesrow = $retreived->fetch_all(MYSQLI_ASSOC);
+	print_r($datesrow);
+}
+function get_user_info($custid)
+{
+	global $connection;
+	$sql = "call customer_load_by_ID($custid)";
+	//print_r($sql);
+	$connection ->next_result();
+
+	try {
+		$retreived = $connection->query($sql);
+		if($retreived->num_rows>0)
+		{
+			$row = $retreived->fetch_row();
+			//print_r($row);
+			$firstname = $row[0];
+			$lastname = $row[1];
+			echo "Welcome ".$firstname." ".$lastname."!";
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	} catch (Exception $e)
+	{
+		return 0;
+	}
+}
+function Determine_User($value)
+{
+	global $connection, $custid;
+	$sql = "call session_verify_logged_in('$value')";
+	$connection->next_result();
+
+	try
+	{
+		$retrieved = $connection->query($sql);
+		if($retrieved->num_rows>0)
+		{
+			$row = $retrieved->fetch_row();
+			$custid = $row[0];
+			//echo $custid;
+			return 1;
+		}
+		else
+		{
+				return 0;
+		}
+	}
+	catch(Exception $ex)
+	{
+		return 0;
+	}
+}
+?>
+<form method="POST" action="" autocomplete="off">
+	<div class="divPage">
+	<div class="bodyContent">
+		<h3>View History</h3>
+		<div class="row">
+			<div class="orderdropdown">
+				<label class="rowtextlabel">Order Dates</label>
+				&nbsp;
+				<select name="orderdate">
+
+					<?php foreach($datesrow as $orderdates):?>
+						<?php if($orderdates['orderdate']!== $previous){?>
+					<option value="<?php echo $orderdates['orderdate'];?>"><?php echo $orderdates['orderdate'];?></option>
+					<?php $previous=$orderdates['orderdate'];} ?>
+					<?php endforeach?>
+				</select>
+			</div>
+			&nbsp;
+			<input class="button" type="submit" name="view" id="savebutton" value="View Details" />
+		</div>
+
+
+		<div class="divbox">
+			<h3>Order Details</h3>
+		</div>
+	</div>
+</div>
+</form>

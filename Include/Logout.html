@@ -1,0 +1,39 @@
+<?php
+	//will process the logout
+	session_start();
+	$sessionvalue = session_id();
+	include("dbfile.php");
+	if (session_logout($sessionvalue))
+	{
+		header('Location: ./index.php');
+	}
+	else {
+		echo "Unable to logout";
+	}
+
+	function session_logout($sessval){
+		global $connection;
+		$sql="call sessions_logged_out('$sessval')";
+		$connection->next_result();
+		if ($connection->query($sql))
+		{
+				if($connection->affected_rows > 0)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+?>
+<div class="divPage">
+		<div class="logoutbanner">
+			<input class="texttolabel" name="msg" id="msg" value="hidden"/>
+		</div>
+</div>

@@ -1,0 +1,74 @@
+<?php
+	include("./dbfile.php");
+	session_start();
+	$sessionvalue = session_id();
+	//echo $sessionvalue;
+	$custid="";
+	if(Determine_User($sessionvalue))
+	{
+		get_user_info($custid);
+	}
+	else
+	{
+		header('Location: ./index.php'); //redirect user to log in if something goes wrong
+	}
+
+	function get_user_info($custid)
+	{
+		global $connection;
+		$sql = "call customer_load_by_ID($custid)";
+		//print_r($sql);
+		$connection ->next_result();
+
+		try {
+			$retreived = $connection->query($sql);
+			if($retreived->num_rows>0)
+			{
+				$row = $retreived->fetch_row();
+				//print_r($row);
+				$firstname = $row[0];
+				$lastname = $row[1];
+				echo "Welcome ".$firstname." ".$lastname."!";
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		} catch (Exception $e)
+		{
+			return 0;
+		}
+	}
+	function Determine_User($value)
+	{
+		global $connection, $custid;
+		$sql = "call session_verify_logged_in('$value')";
+		$connection->next_result();
+
+		try
+		{
+			$retrieved = $connection->query($sql);
+			if($retrieved->num_rows>0)
+			{
+				$row = $retrieved->fetch_row();
+				$custid = $row[0];
+				//echo $custid;
+				return 1;
+			}
+			else
+			{
+					return 0;
+			}
+		}
+		catch(Exception $ex)
+		{
+			return 0;
+		}
+	}
+
+
+?>
+<div class="divPage">
+
+</div>
