@@ -6,10 +6,10 @@ $sessionvalue = session_id();
 //echo $sessionvalue;
 $custid="";
 $datesrow;
+$ordersrow;
 $previous;
 if(Determine_User($sessionvalue))
 {
-	get_user_info($custid);
 	get_order_dates($custid);
 
 }
@@ -33,8 +33,13 @@ else {
 
 function get_order_details($date, $custid)
 {
-	//echo $date;
-	//echo $custid;
+	global $connection, $ordersrow;
+	$sql="call orderdetails_load_by_date('$date', $custid)";
+	$connection->next_result();
+	$retreived = $connection->query($sql);
+	$ordersrow = $retreived->fetch_all(MYSQLI_ASSOC);
+	//print_r($ordersrow);
+
 }
 function get_order_dates($custid)
 {
@@ -43,7 +48,7 @@ function get_order_dates($custid)
 	$connection->next_result();
 	$retreived = $connection->query($sql);
 	$datesrow = $retreived->fetch_all(MYSQLI_ASSOC);
-	print_r($datesrow);
+	//print_r($datesrow);
 }
 function get_user_info($custid)
 {
@@ -123,6 +128,26 @@ function Determine_User($value)
 
 		<div class="divbox">
 			<h3>Order Details</h3>
+			<table>
+				<tr>
+					<th>Order ID</th>
+					<th> Quantity </th>
+					<th>Price </th>
+					<th>Album Name</th>
+				</tr>
+				<?php if(isset($_POST['view']))
+				{?>
+				<?php foreach($ordersrow as $ordersdet):?>
+				<tr>
+					<td><?php echo $ordersdet['orderid'];?></td>
+					<td><?php echo $ordersdet['quantity'];?></td>
+					<td><?php echo $ordersdet['unitprice'];?></td>
+					<td><?php echo $ordersdet['name'];?></td>
+
+				</tr>
+			<?php endforeach?>
+			<?php }?>
+			</table>
 		</div>
 	</div>
 </div>
