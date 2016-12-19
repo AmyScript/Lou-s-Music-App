@@ -8,12 +8,14 @@
 
 	$price = "";
 	$total ="0.00";
-	$subtotal ="0.00";
+	$subtotal="0.00";
 	$taxes ="0.00";
 	$message ="";
 	$categoryrows;
 	$albumrows = "";
-	$orderid  = "";
+
+  $orderid="";
+
 	$quantity = "";
 	$custid = "";
 	$orderdetailsID = "";
@@ -30,9 +32,15 @@
 
 		//}
 
+
+
     if(isset($_POST['category']))
 		{
-      //echo $_POST['category'];
+      reload_screen();
+      if($orderid>0)
+      {
+        load_albums_on_order($orderid);
+      }
 			if($category != 5)
 			{
 				$category = $_POST['category'];
@@ -40,6 +48,7 @@
 				if(isset($_POST['album']))
 				{
 					$albumid = $_POST['album'];
+          reload_screen();
 					if(!empty($albumid))
 					{
 						Album_Price_Load($albumid);
@@ -62,7 +71,8 @@
 			// create order record
 			if(empty($_POST['order']))
 			{
-				$albumid = $_POST['album'];
+        echo "hello empty";
+        $albumid = $_POST['album'];
 				$price = $_POST['price'];
 				if(create_new_order($custid))
 				{
@@ -74,12 +84,21 @@
 				}
 				else
 				{
-          //echo "failed";
+
 				}
 			}
 			else
 			{
-
+        echo $orderid;
+        $albumid = $_POST['album'];
+				$price = $_POST['price'];
+        if(add_to_existing_order($orderid))
+        {
+          if(calculate_running_total($orderid))
+          {
+            load_albums_on_order($orderid);
+          }
+        }
 			}
 		}
 
@@ -101,7 +120,17 @@
 	{
 		// redirect the user back to login
 	}
-	function load_albums_on_order($orderid)
+  function reload_screen()
+	{
+		global $orderid, $total,$subtotal,$taxes;
+
+		$orderid = $_POST['order'];
+		$total= $_POST['total'];
+		$subtotal= $_POST['subtotal'];
+		$taxes= $_POST['taxes'];
+	}
+
+  function load_albums_on_order($orderid)
 	{
     //echo "hello";
 		global $connection, $itemsrow;
@@ -150,6 +179,22 @@
 		}
 
 	}
+  function add_to_existing_order($orderid)
+  {
+    global $connection, $albumid, $price;
+    $sqlorderdetail = "call orderdetails_insert($orderid,$albumid,$price)";
+    $connection->next_result();
+    $connection->query($sqlorderdetail);
+    if(mysqli_affected_rows($connection) == 1)
+    {
+
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+  }
 	function create_new_order($custid)
 	{
 		global $connection,$orderid, $albumid,$price;

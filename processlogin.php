@@ -14,7 +14,10 @@ if(!empty($_POST['email']) && !empty($_POST['pswd']))
 	// do processing
 	$email = $_POST['email'];
 	$password  = $_POST['pswd'];
+
+
 	$custID = process_login($email,$password);
+
 	if($custID > 0)
 	{
 		if(session_insert($custID,$sessionvalue))
@@ -34,8 +37,12 @@ if(!empty($_POST['email']) && !empty($_POST['pswd']))
 }
 else
 {
+
 	header('Location: index.php');
 }
+
+
+
 function Session_insert($customerid, $sessval)
 {
 	global $connection;
