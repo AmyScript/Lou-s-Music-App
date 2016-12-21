@@ -5,7 +5,6 @@
 
 	$albumid="";
 	$category="";
-
 	$price = "";
 	$total ="0.00";
 	$subtotal="0.00";
@@ -13,26 +12,20 @@
 	$message ="";
 	$categoryrows;
 	$albumrows = "";
-
   $orderid="";
-
 	$quantity = "";
 	$custid = "";
 	$orderdetailsID = "";
 	$orderrows = "";
 	$itemsrow = "";
 	$items = array();
+
+  //get customer id from sessionvalue
 	if(Determine_User($sessionvalue))
 	{
 		get_user_info($custid);
 		// setup routine
 		Categories_load_all();
-		//if(!empty($_POST['order'])
-		//{
-
-		//}
-
-
 
     if(isset($_POST['category']))
 		{
@@ -58,20 +51,20 @@
 					$price = "";
 					}
 				}
-
 			}
 			else
 			{
 				$price = "";
 			}
 		}
+
 		if(isset($_POST['save']))
 		{
 			// will save the order
 			// create order record
 			if(empty($_POST['order']))
 			{
-        echo "hello empty";
+        //echo "hello empty";
         $albumid = $_POST['album'];
 				$price = $_POST['price'];
 				if(create_new_order($custid))
@@ -104,7 +97,15 @@
 
 		else if(isset($_POST['clear']))
 		{
-				// delete all order detail records based on the orderid
+				if(delete_order($orderid))
+        {
+          $message = "order deleted.";
+        }
+        else {
+          $message = "could not delete order.";
+        }
+        clearscreen();
+        // delete all order detail records based on the orderid
 				// delete the order record based on the orderid
 				//clear the screen
 		}
@@ -119,6 +120,53 @@
 	else
 	{
 		// redirect the user back to login
+    header('Location: ./index.php');
+	}
+
+  function delete_order($orderid)
+  {
+    global $connection;
+    //delete order details
+    $sql = "call orderdetails_delete($orderid)";
+    $connection->next_result();
+    $connection->query($sql);
+    echo(mysqli_affected_rows($connection));
+    if(mysqli_affected_rows($connection) >= 1)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+    //delete order
+    $sql = "call order_delete($orderid)";
+    $connection->next_result();
+    $connection->query($sql);
+    echo(mysqli_affected_rows($connection));
+    if(mysqli_affected_rows($connection) >= 1)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+  }
+
+  function clearscreen()
+	{
+		global $total,$subtotal,$taxes, $orderid, $category,$quantity, $price;
+
+		$category="";
+		$quantity ="";
+    $orderid="";
+		$total ="0.00";
+	 $subtotal ="0.00";
+	  $taxes ="0.00";
+
+		$price = "0.00";
+	Categories_load_all();
 	}
   function reload_screen()
 	{
@@ -132,10 +180,8 @@
 
   function load_albums_on_order($orderid)
 	{
-    //echo "hello";
 		global $connection, $itemsrow;
 		$sql = "call orderdetails_load_by_orderid($orderid)";
-    //echo $sql;
 		$connection->next_result();
 		$retrieved = $connection->query($sql);
 		if($retrieved->num_rows > 0)
@@ -432,9 +478,13 @@ function Determine_User($thesession)
 				<input type="text" readonly name="total" id="total" value="<?php echo $total; ?>" width="24px" />
 
 			</div>
-		  	<br />
-			<br />
+      <div class="divCenter" >
+      <div class="space">
+        <div class="errorStar">
+          <?php if(!empty($message)) echo $message;?>
+      </div>
 
+      </div>
 	</div>
 </div>
 </form>
