@@ -334,7 +334,7 @@ province_load();
 			<div class="errorStar">
 				<?php if(isset($errors['city'])) echo $errors['city'];?>
 			</div>
-			<label class="rowtextlabelright">province</label>
+			<label class="rowtextlabelright">Province</label>
 			&nbsp;
 			<select  name="province">
 					<option value="">Select Province</option>
@@ -354,7 +354,7 @@ province_load();
 				<?php if(isset($errors['postalcode'])) echo $errors['postalcode'];?>
 			</div>
 
-			<label class="rowtextlabel">Country</label>
+			<label class="rowtextlabelright">Country</label>
 			&nbsp;
 			<select name= "country">
 				<option value="">Select Country</option>
@@ -377,7 +377,7 @@ province_load();
 		<div class="row">
 			<label class="rowtextlabel">Work</label>
 			<input class="rowinput" type="text" name="worknumber" id="worknumber" maxlength="14" value="<?php echo $workphone; ?>"/>
-			<label class="rowtextlabel">Extension</label>
+			<label class="rowtextlabelright">Extension</label>
 			<input class="rowinput" type="text" name="extension" id="ext" maxlength="14" value="<?php echo $extension; ?>"/>
 		</div>
 		<br />

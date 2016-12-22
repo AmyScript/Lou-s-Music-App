@@ -128,15 +128,7 @@
     $sql = "call orderdetails_delete($orderid)";
     $connection->next_result();
     $connection->query($sql);
-    //echo(mysqli_affected_rows($connection));
-    if(mysqli_affected_rows($connection) >= 1)
-    {
-      return 1;
-    }
-    else
-    {
-      return 0;
-    }
+
     //delete order
     $sql = "call order_delete($orderid)";
     $connection->next_result();
@@ -397,7 +389,7 @@ function Determine_User($thesession)
                         </select>
 					</div>
 					&nbsp;&nbsp;
-					<input type="submit" name="categorysload" id="categorysload" value="Load"/>
+
 				</div>
 
 				<div class="row">
@@ -412,15 +404,16 @@ function Determine_User($thesession)
 						</select>
 
 					</div>
-					<input type="submit" name="details" id="details" value="View Songs"/>
 
 
 
+	&nbsp;&nbsp;
 				</div>
 				<div>
-					<label class="rowtextlabel">Price</label>	&nbsp;&nbsp;
+					<label class="rowtextlabel">Price</label>
 					<input class="rowinputsmall" type="text"  name="price" id= "price" readonly value="<?php echo $price;?>" />
 				</div>
+        &nbsp;
 
 
 

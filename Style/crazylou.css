@@ -1,24 +1,19 @@
 body
 {
 	background-color:white;
+	font-family:Ubuntu;
+	color:#6681BE;
+
 }
 h2
 {
 	width:468px;
 	text-align:right;
 }
-h3
-{
-	width:235px;
-	text-align:left;
-	margin-left:46px;
-}
+
 .divbox
 {
-	border-style:solid;
-	margin-bottom:16px;
-	height:345px;
-	margin-top:4px;
+
 }
 
 .orderdropdown
@@ -55,12 +50,12 @@ h3
 }
 .divRight
 {
-	float:left;
-	background-color:white;
+	text-align:center;
+	background-color:rgba(255, 255, 255, 0.5);
 	padding-left:4px;
 	padding-right:4px;
-	color: black;
-	width:544px;
+
+
 }
 .headingleft
 {
@@ -114,12 +109,16 @@ border-style: none;
 }
 .headingright
 {
-	background-color:Blue;
+
+	margin:0 auto;
+	background-color:#6681BE;
 	color:White;
 	height:23px;
 	text-align:center;
-	padding-top:2px;
+
+	width:300px;
 }
+
 .loginbutton
 {
 	text-align:center;
@@ -129,19 +128,30 @@ border-style: none;
 
 .createprofileheading
 {
-	background-color:beige;
+	background-color:#6681BE;
 	color:white;
 	height:23px;
 	text-align:center;
 	padding-top:2px;
-	font-weight:700;
-	margin-top:47px;
+	width:300px;
+
+	margin:50px auto;
+}
+.createprofileheading a
+{
+	text-decoration:none;
+	color:white;
+
+}
+
+.createprofileheading a:hover{
+	color:black;
 }
 .divPage
 {
 	width:960px;
 	min-height:530px;
-	margin-top: 12px;
+	margin-top: 0px;
 	margin-left:auto;
 	margin-right:auto;
 	margin-bottom:0px;
@@ -151,22 +161,25 @@ border-style: none;
 {
 	width:960px;
 	height:85px;
-	background-image:url(../Images/crazyloubanner.png);
-	background-repeat: no-repeat;
+	background-color:#6681BE;
+
 }
 .headerText
 {
 	text-align:center;
-	font-size:larger;
-	color:red;
-	font-weight:900;
+	font-family:"Dancing Script";
+	color:white;
+	font-size:60px;
 	padding-top:10x;
 }
-
+.online{
+	font-size:20px;
+}
 .navbar
 {
-	color:blue;
-	margin-top:8px;
+	color:white;
+	background-color:#6681BE;
+	margin-top:0px;
 	width:960px;
 	height:25px;
 
@@ -175,51 +188,63 @@ border-style: none;
 
 .navbutton a
 {
+	color:white;
 	float:left;
+	display:inline-block;
+	text-decoration:none;
 	width: 140px;
 	height:25px;
-	line-height:22px;
-	font-family:calbri;
+	font-family:Ubuntu;
 	font-size: 16px;
-	color:black;
-	font-weight:700;
 	text-align:center;
 	padding-left:3px;
 
 }
+
+.username:nth-of-type(2)
+{
+	margin-top:50px;
+}
 .username
 {
-	margin-top:23px;
-	text-align:left;
-	padding-left:135px;
-	color:black;
-	font-size:1.3em
+	margin-top:10px;
+	text-align:center;
+
 }
 .usernametext
 {
-	margin-right:6px;
-	float:left;
-	width: 125px;
-	color:blue;
 	text-align:right;
+	display:inline-block;
+	width:100px;
 }
 .usernameinput
 {
-	float:left;
-	width:240px;
+	display:inline-block;
+	width:150px;
 }
 
+input#login
+{
+	background-color:#6681BE;
+	color:white;
+	border-style:none;
+	border-radius:2px;
+	padding:4px 12px 6px;
+}
 
+input#login:hover
+{
+	color:black;
+	cursor:pointer;
+}
 .navbutton a:hover
 {
 	float:left;
 	width: 140px;
 	height:25px;
-	line-height:22px;
-	font-family:calibri;
+	font-family:Ubuntu;
 	font-size: 16px;
-	color:blue;
-	font-weight: 700;
+	color:black;
 	text-align:center;
 	background-repeat: repeat-x;
 	padding-left:3px;
@@ -229,12 +254,17 @@ border-style: none;
 {
 width:960px;
 	height:85px;
-	background-image: url(../Images/crazyloufooter.png); /*image to display in the navigation section*/
-	background-repeat: repeat-x;  /*The background image */
-	color:black;
-	font-weight:900;
+	background-color:#6681BE;
+	color:white;
+	font-size:20px;
+
+	font-family:"Dancing Script";
+}
+.footer h3
+{
 	text-align:center;
-	text-transform:uppercase;
+	margin:0px;
+	line-height:85px;
 }
 
 .bodyContent
@@ -311,11 +341,16 @@ width:960px;
 }
 .button
 {
-	margin-top:3px;
-	margin-left:7px;
-	margin-right:5px;
-	background-color:lightgrey;
+	background-color:#6681BE;
+	color:white;
+	border-style:none;
+	border-radius:2px;
+	padding:4px 12px 6px;
+}
+
+.button:hover{
 	color:black;
+	cursor:pointer;
 }
 .checkoutbutton
 {
@@ -355,9 +390,35 @@ width:960px;
 table, th, td{
 
 	border:1px solid black;
+	border-spacing:0px;
 }
 
 .space
 {
 	height:100px;
+}
+
+.divPage h4
+{
+	float:right;
+	padding:0px;
+	margin:0px;
+}
+.background {
+  font-family: 'Ubuntu', sans-serif;
+
+
+}
+.background:after{
+  content : "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: url("../music.jpg") no-repeat;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    opacity : 0.5;
+    z-index: -1;
 }

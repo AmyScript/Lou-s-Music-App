@@ -4,6 +4,8 @@
 	$sessionvalue = session_id();
 	//echo $sessionvalue;
 	$custid="";
+	$firstname="";
+	$lastname="";
 	if(Determine_User($sessionvalue))
 	{
 		get_user_info($custid);
@@ -15,7 +17,7 @@
 
 	function get_user_info($custid)
 	{
-		global $connection;
+		global $connection, $firstname, $lastname;
 		$sql = "call customer_load_by_ID($custid)";
 		//print_r($sql);
 		$connection ->next_result();
@@ -28,7 +30,7 @@
 				//print_r($row);
 				$firstname = $row[0];
 				$lastname = $row[1];
-				echo "Welcome ".$firstname." ".$lastname."!";
+
 				return 1;
 			}
 			else
@@ -70,5 +72,5 @@
 
 ?>
 <div class="divPage">
-
+<h4><?php echo "Welcome ".$firstname." ".$lastname."!";?></h4>
 </div>
