@@ -24,12 +24,8 @@
 
 	if(isset($_POST['save']))
 	{
-
 		//will save the information to the database 	3.
 		get_data_from_page();
-
-
-
 	}
 	else if(isset($_POST['clear']))
 	{
@@ -45,6 +41,7 @@
 	{
 		//load the drop down lists
 	}
+
 function Clear_Screen()
 {
 	global $firstname,$lastname,$email,$password,$confirm,$street,$suite,$city,$province,$postal,$country,$homephone,$workphone,$extension,$cellphone,$customerid;
@@ -65,7 +62,9 @@ function Clear_Screen()
 	$cellphone = "";
 	$uname = "";
 	$customerid = "";
+	$errors2="";
 }
+
 function get_data_from_page()
 {
 	global $firstname,$lastname,$email,$password,$confirm,$street,$suite,$city,$province,$postal,$country,$homephone,$workphone,$extension,$cellphone,$errors;
@@ -103,7 +102,6 @@ function get_data_from_page()
 	}
 }
 
-
 function validateInput($input, $theerror)
 	{
 		global $errors,$message;
@@ -113,6 +111,7 @@ function validateInput($input, $theerror)
 			$message="Please fill in all the required fields";
 		}
 	}
+
 function ValidatePassword($password,$confirm,$theerror)
 	{
 		global $errors;
@@ -122,6 +121,7 @@ function ValidatePassword($password,$confirm,$theerror)
 			$message ="Passwords do not match";
 		}
 	}
+
 function ValidatePhone($home,$work,$cell,$theerror)
 		{
 			global $message,$errors;
@@ -131,9 +131,10 @@ function ValidatePhone($home,$work,$cell,$theerror)
 				$message="At least one phone number must be entered";
 			}
 		}
+
 function create_profile()
 {
-   global $connection,$firstname,$lastname,$email,$password,$customerid,$errors;
+   global $connection,$firstname,$lastname,$email,$password,$customerid,$errors,$errors2;
    $encryptedpassword = md5($password);
    $sql = "call customer_Insert('$firstname','$lastname','$email','$encryptedpassword')";
    $sqlcustomerid = "call customer_last_inserted('$email')";
@@ -141,7 +142,6 @@ function create_profile()
    try
    {
 	$connection->query($sql); // creates customer record
-
 	$connection->next_result();
 	if($retrieved = $connection->query($sqlcustomerid))
 	{
@@ -152,9 +152,8 @@ function create_profile()
 			$customerid = $row[0];
 			insert_address($customerid);
 			insert_phone($customerid);
-
 			$errors2 = "Successfully created Profile";
-			echo $errors2;
+			//echo $errors2;
 		}
 		else
 		{
@@ -167,6 +166,7 @@ function create_profile()
      $errors["creatprofile"] = "Could not create Profile";
    }
 }
+
 function insert_address($customerID)
 {
 	global $connection, $street,$suite,$city,$province,$postal,$country,$errors;
@@ -212,7 +212,6 @@ function insert_phone($customerID)
 
 	$sql3 = "call phone_Insert('$cellphone',' ', 'C', $customerID) ";
 	$connection->next_result();
-
 	try
 	{
 		$connection->query($sql3);
@@ -222,6 +221,7 @@ function insert_phone($customerID)
 		$errors["creatprofile"] = "Could not create cell phone";
 	}
 }
+
 function province_load()
 {
 	global $connection, $provincesRows, $errors;
@@ -244,9 +244,9 @@ function province_load()
 	{
 	$errors["creatprofile"] = "Could not load Provinces Err 5497";
 	}
-
 }
 ?>
+
 <form method="POST" action="" autocomplete="off">
 <div class="divPage">
 	<div class="bodyContent">
@@ -363,13 +363,11 @@ function province_load()
 			</div>
 		<br />
 		<div class="errorStar">
-
-						<?php echo $errors2;?>
+						<?php if(!empty($errors2)) echo $errors2;?>
 					</div>
 		<input class="button" type="submit" name="save" id="savebutton" value="Create Profile" />
 		<input class="button" type="submit" name="clear" id="clearbutton" value="Clear" />
 		<input class="button" type="submit" name="return" id="returnbutton" value="Go to Login" />
-
 		</div>
 		<br />
 		</div>

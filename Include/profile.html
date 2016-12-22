@@ -143,6 +143,7 @@ province_load();
 				}
 			}
 	}
+
 	function province_load()
 	{
 		global $connection, $provincesRows, $errors2;
@@ -167,7 +168,6 @@ province_load();
 		}
 
 	}
-
 
 	if(isset($_POST['save']))
 	{
@@ -225,6 +225,7 @@ province_load();
 				$message="Please fill in all the required fields";
 			}
 		}
+
 	function ValidatePassword($password,$confirm,$theerror)
 		{
 			global $errors;
@@ -234,6 +235,7 @@ province_load();
 				$message ="Passwords do not match";
 			}
 		}
+
 	function ValidatePhone($home,$work,$cell,$theerror)
 			{
 				global $message,$errors;
@@ -274,6 +276,7 @@ province_load();
 			$connection->query($sql);
 		}
 ?>
+
 <form method="POST" action="" autocomplete="off">
 <div class="divPage">
 	<div class="bodyContent">
@@ -385,13 +388,11 @@ province_load();
 			</div>
 		<br />
 			<div class="errorStar">
-					<?php echo $errors2;?>
+					<?php if(!empty($errors2)) echo $errors2;?>
 			</div>
 		<br />
 		<input class="button" type="submit" name="save" id="savebutton" value="Save Changes" />
 		<input class="button" type="submit" name="cancel" id="cancelbutton" value="Cancel" />
-
-
 		</div>
 		</div>
 </div>

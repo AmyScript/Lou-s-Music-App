@@ -8,10 +8,10 @@ $custid="";
 $datesrow;
 $ordersrow;
 $previous;
+
 if(Determine_User($sessionvalue))
 {
 	get_order_dates($custid);
-
 }
 else
 {
@@ -20,12 +20,10 @@ else
 
 if(isset($_POST['view']))
 {
-global $date, $custid;
-//echo "hello";
-$date=$_POST['orderdate'];
-get_order_details($date, $custid);
-
-
+	global $date, $custid;
+	//echo "hello";
+	$date=$_POST['orderdate'];
+	get_order_details($date, $custid);
 }
 else {
 
@@ -39,8 +37,8 @@ function get_order_details($date, $custid)
 	$retreived = $connection->query($sql);
 	$ordersrow = $retreived->fetch_all(MYSQLI_ASSOC);
 	//print_r($ordersrow);
-
 }
+
 function get_order_dates($custid)
 {
 	global $connection, $datesrow;
@@ -50,13 +48,13 @@ function get_order_dates($custid)
 	$datesrow = $retreived->fetch_all(MYSQLI_ASSOC);
 	//print_r($datesrow);
 }
+
 function get_user_info($custid)
 {
 	global $connection;
 	$sql = "call customer_load_by_ID($custid)";
 	//print_r($sql);
 	$connection ->next_result();
-
 	try {
 		$retreived = $connection->query($sql);
 		if($retreived->num_rows>0)
@@ -77,12 +75,12 @@ function get_user_info($custid)
 		return 0;
 	}
 }
+
 function Determine_User($value)
 {
 	global $connection, $custid;
 	$sql = "call session_verify_logged_in('$value')";
 	$connection->next_result();
-
 	try
 	{
 		$retrieved = $connection->query($sql);
@@ -104,6 +102,7 @@ function Determine_User($value)
 	}
 }
 ?>
+
 <form method="POST" action="" autocomplete="off">
 	<div class="divPage">
 	<div class="bodyContent">
@@ -143,7 +142,6 @@ function Determine_User($value)
 					<td><?php echo $ordersdet['quantity'];?></td>
 					<td><?php echo $ordersdet['unitprice'];?></td>
 					<td><?php echo $ordersdet['name'];?></td>
-
 				</tr>
 			<?php endforeach?>
 			<?php }?>

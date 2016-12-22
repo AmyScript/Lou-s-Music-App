@@ -1,8 +1,7 @@
 <?php
-    session_start();
+  session_start();
 	$sessionvalue = session_id();
 	include("dbfile.php");
-
 	$albumid="";
 	$category="";
 	$price = "";
@@ -82,7 +81,7 @@
 			}
 			else
 			{
-        echo $orderid;
+        //echo $orderid;
         $albumid = $_POST['album'];
 				$price = $_POST['price'];
         if(add_to_existing_order($orderid))
@@ -94,7 +93,6 @@
         }
 			}
 		}
-
 		else if(isset($_POST['clear']))
 		{
 				if(delete_order($orderid))
@@ -130,7 +128,7 @@
     $sql = "call orderdetails_delete($orderid)";
     $connection->next_result();
     $connection->query($sql);
-    echo(mysqli_affected_rows($connection));
+    //echo(mysqli_affected_rows($connection));
     if(mysqli_affected_rows($connection) >= 1)
     {
       return 1;
@@ -143,7 +141,7 @@
     $sql = "call order_delete($orderid)";
     $connection->next_result();
     $connection->query($sql);
-    echo(mysqli_affected_rows($connection));
+    //echo(mysqli_affected_rows($connection));
     if(mysqli_affected_rows($connection) >= 1)
     {
       return 1;
@@ -162,16 +160,15 @@
 		$quantity ="";
     $orderid="";
 		$total ="0.00";
-	 $subtotal ="0.00";
+	  $subtotal ="0.00";
 	  $taxes ="0.00";
-
 		$price = "0.00";
 	Categories_load_all();
 	}
+
   function reload_screen()
 	{
 		global $orderid, $total,$subtotal,$taxes;
-
 		$orderid = $_POST['order'];
 		$total= $_POST['total'];
 		$subtotal= $_POST['subtotal'];
@@ -233,7 +230,6 @@
     $connection->query($sqlorderdetail);
     if(mysqli_affected_rows($connection) == 1)
     {
-
       return 1;
     }
     else
@@ -241,6 +237,7 @@
       return 0;
     }
   }
+
 	function create_new_order($custid)
 	{
 		global $connection,$orderid, $albumid,$price;
@@ -265,7 +262,6 @@
 				$connection->query($sqlorderdetail);
 				if(mysqli_affected_rows($connection) == 1)
 				{
-
           return 1;
 				}
 				else
@@ -283,6 +279,7 @@
 			return 0;
 		}
 	}
+
 function get_user_info($custid)
 {
 	global $connection;
@@ -296,13 +293,12 @@ function get_user_info($custid)
 		$row = $retrieved->fetch_row();
 		$firstname = $row[0];
 		$lastname = $row[1];
-		echo $firstname." ".$lastname;
+		echo "Hello ".$firstname." ".$lastname."!";
 	}
 	else
 	{
 		header('Location: ./index.php');
 	}
-
 
 }
 function Determine_User($thesession)
@@ -330,6 +326,7 @@ function Determine_User($thesession)
 		return 0;
 	}
 }
+
 	function Categories_load_all()
 	{
 		global $connection,$categoryrows;
@@ -346,6 +343,7 @@ function Determine_User($thesession)
 
 		}
 	}
+
 	function Albums_by_Category_Load($cat)
 	{
 		global $connection,$albumrows;
@@ -358,6 +356,7 @@ function Determine_User($thesession)
 			//print_r($albumrows);
 		}
 	}
+
 	function Album_Price_Load($album)
 	{
 		global $connection, $price;
@@ -370,14 +369,13 @@ function Determine_User($thesession)
 		{
 			$row = $retrieved->fetch_ASSOC();
 			$price = $row['price'];
-
 		}
 		else
 		{
 		}
-
 	}
 ?>
+
 <form method="POST" action="">
 <div class="divPage">
 	<div class="bodyContent">
@@ -483,7 +481,6 @@ function Determine_User($thesession)
         <div class="errorStar">
           <?php if(!empty($message)) echo $message;?>
       </div>
-
       </div>
 	</div>
 </div>
